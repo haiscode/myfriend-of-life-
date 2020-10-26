@@ -251,7 +251,7 @@ int lcd_draw_jpg(unsigned int x,unsigned int y,const char *pjpg_path,int flag_t)
 					num_width = i/cinfo.output_width*800;//放大长
 				}
 
-				if (cinfo.output_width >=480)
+				if (cinfo.output_height >=480)
 				{
 					num_height = y_n*480/cinfo.output_height;//缩小宽
 				}else

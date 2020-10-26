@@ -18,6 +18,7 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#include <netdb.h>
 typedef struct city
 {
     char id[20];
@@ -25,9 +26,18 @@ typedef struct city
 
 }city;
 
+struct mp3_inf
+{
+    char name[50];
+    char artistsname[50];
+};
+
+
+int socket_get(char * service_ip);
 bool find_city_id(char *cmd,city *c);
 void show_error(void);
 cJSON * txt_get(char * cmd,int tcp_socket);
 bool  chat_get(char * cmd,int tcp_socket);
 int get_jpg(void);
+struct mp3_inf* get_music(void);
 #endif

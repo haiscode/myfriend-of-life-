@@ -1,120 +1,132 @@
 #include "main.h"
 
-bool show_futuer(cJSON * obj)
+bool show_futuerweather(cJSON * obj)
 {
     
     font *f = fontLoad("/usr/share/fonts/DroidSansFallback.ttf");
     
     bitmap *bm = createBitmapWithInit(800,480,4,getColor(0,0,128,255));
-    //获取未来5天的天气情况
-    struct data_fun *inf_0 =  weather_show(obj,0);
-    struct data_fun *inf_1 =  weather_show(obj,1);
-    struct data_fun *inf_2 =  weather_show(obj,2);
-    struct data_fun *inf_3 =  weather_show(obj,3);
-    struct data_fun *inf_4 =  weather_show(obj,4);
-    struct data_fun *inf_5 =  weather_show(obj,5);
+    struct data_fun weather_inf_display[6];
+    int i = 0;
+    for (i = 0; i < 6; i++)
+    {
+        weather_inf_display[i] = *(weather_show(obj,i));
+    }
 
-    
     fontSetSize(f,30);
-    //地点+更新时间
-    fontPrint(f,bm,0,0,inf_0->first,getColor(0,255,255,255),0);
-    //显示星期
-    fontPrint(f,bm,25,50,inf_0->week,getColor(0,255,255,255),0);
-    fontPrint(f,bm,150,50,inf_1->week,getColor(0,255,255,255),0);
-    fontPrint(f,bm,280,50,inf_2->week,getColor(0,255,255,255),0);
-    fontPrint(f,bm,420,50,inf_3->week,getColor(0,255,255,255),0);
-    fontPrint(f,bm,555,50,inf_4->week,getColor(0,255,255,255),0);
-    fontPrint(f,bm,690,50,inf_5->week,getColor(0,255,255,255),0);
-    //显示月日
-    fontPrint(f,bm,15,80,inf_0->md,getColor(0,255,255,255),0);
-    fontPrint(f,bm,140,80,inf_1->md,getColor(0,255,255,255),0);
-    fontPrint(f,bm,270,80,inf_2->md,getColor(0,255,255,255),0);
-    fontPrint(f,bm,410,80,inf_3->md,getColor(0,255,255,255),0);
-    fontPrint(f,bm,545,80,inf_4->md,getColor(0,255,255,255),0);
-    fontPrint(f,bm,680,80,inf_5->md,getColor(0,255,255,255),0);
-
+    //城市名称+更新时间+小贴士
+    fontPrint(f,bm,0,0,weather_inf_display[0].first,getColor(0,255,255,255),0);
     
-
+    for (i = 0; i < 6; i++)
+    {
+    //显示星期
+        
+        fontPrint(f,bm,35+i*130,50,weather_inf_display[i].week,getColor(0,255,255,255),0);
+    
+    //显示月日
+    
+        fontPrint(f,bm,20+i*130,80,weather_inf_display[i].md,getColor(0,255,255,255),0);
+    
     //显示低高温
-    fontPrint(f,bm,25,256,inf_0->wendu,getColor(0,255,255,255),0);
-    fontPrint(f,bm,150,256,inf_1->wendu,getColor(0,255,255,255),0);
-    fontPrint(f,bm,280,256,inf_2->wendu,getColor(0,255,255,255),0);
-    fontPrint(f,bm,420,256,inf_3->wendu,getColor(0,255,255,255),0);
-    fontPrint(f,bm,555,256,inf_4->wendu,getColor(0,255,255,255),0);
-    fontPrint(f,bm,690,256,inf_5->wendu,getColor(0,255,255,255),0);
+    
+        fontPrint(f,bm,10+i*135,256,weather_inf_display[i].wendu,getColor(0,255,255,255),0);
+    
     //显示天气情况
-    fontPrint(f,bm,50,306,inf_0->type,getColor(0,255,255,255),0);
-    fontPrint(f,bm,175,306,inf_1->type,getColor(0,255,255,255),0);
-    fontPrint(f,bm,305,306,inf_2->type,getColor(0,255,255,255),0);
-    fontPrint(f,bm,445,306,inf_3->type,getColor(0,255,255,255),0);
-    fontPrint(f,bm,580,306,inf_4->type,getColor(0,255,255,255),0);
-    fontPrint(f,bm,715,306,inf_5->type,getColor(0,255,255,255),0);
-
+    
+        fontPrint(f,bm,40+i*135,306,weather_inf_display[i].type,getColor(0,255,255,255),0);
+    
     //显示风向风级
     
-    fontPrint(f,bm,15,356,inf_0->fxfl,getColor(0,255,255,255),0);
-    fontPrint(f,bm,140,356,inf_1->fxfl,getColor(0,255,255,255),0);
-    fontPrint(f,bm,270,356,inf_2->fxfl,getColor(0,255,255,255),0);
-    fontPrint(f,bm,410,356,inf_3->fxfl,getColor(0,255,255,255),0);
-    fontPrint(f,bm,545,356,inf_4->fxfl,getColor(0,255,255,255),0);
-    fontPrint(f,bm,680,356,inf_5->fxfl,getColor(0,255,255,255),0);
+        fontPrint(f,bm,15+i*135,356,weather_inf_display[i].fxfl,getColor(0,255,255,255),0);
+    
 
     //显示空气质量
-
-    fontPrint(f,bm,50,406,inf_0->aqi,api_level(inf_0->aqilv),0);
-    fontPrint(f,bm,175,406,inf_1->aqi,api_level(inf_1->aqilv),0);
-    fontPrint(f,bm,305,406,inf_2->aqi,api_level(inf_2->aqilv),0);
-    fontPrint(f,bm,445,406,inf_3->aqi,api_level(inf_3->aqilv),0);
-    fontPrint(f,bm,580,406,inf_4->aqi,api_level(inf_4->aqilv),0);
-    fontPrint(f,bm,715,406,inf_5->aqi,api_level(inf_5->aqilv),0);
+    
+        fontPrint(f,bm,40+135*i,406,weather_inf_display[i].aqi,api_level(weather_inf_display[i].aqilv),0);
+    }
     show_font_to_lcd(mmap_fd,0,0,bm);
     //显示图片
-    show_typepic(inf_0->type,20,120);
-    show_typepic(inf_1->type,145,120);
-    show_typepic(inf_2->type,275,120);
-    show_typepic(inf_3->type,415,120);
-    show_typepic(inf_4->type,550,120);
-    show_typepic(inf_5->type,685,120);
+    for (i = 0; i < 6; i++)
+    {
+        show_typepic(weather_inf_display[i].type,20+i*130,120);
+    }
+    
     fontUnload(f);
     destroyBitmap(bm);
-
     //显示延时20s
     sleep(20);
     return true;
 }
-int socket_get(char * service_ip)
+#if 0
+void say(int arg)//歇后语
 {
-    int tcp_socket = socket(AF_INET, SOCK_STREAM, 0);
-                if (tcp_socket == -1)
-                {
-                    perror("socket()");
-                    return -1;
-                }
-    struct sockaddr_in service_addr;
-    service_addr.sin_port = htons(80);
-    service_addr.sin_family = AF_INET;
-    service_addr.sin_addr.s_addr = inet_addr(service_ip);
-
-    if(connect(tcp_socket,(struct sockaddr *)&service_addr,sizeof(struct sockaddr)) == -1)
-    {
-        perror("connect()");
-        return -1;
-    }else
-    {
-        printf("connect success!!!\n");
-        return tcp_socket;
-    }   
-
-} 
-
-
-void *myfriend(void *arg)
-{
-    
+    int say_socket;
     while (1)
     {
-        GIF_show2(); //正常显示2
+        say_socket = socket_get("v1.alapi.cn");
+                if (say_socket == -1)
+                {
+                    continue;
+                }else
+                {
+                    break;
+                }          
     }
+
+    char *http_head = "GET /api/xhy HTTP/1.1\r\nHOST:v1.alapi.cn\r\n\r\n";
+
+        write(say_socket,http_head,strlen(http_head));
+
+        char  head[2048*100] ={0};
+        read(say_socket,head,sizeof(head));
+    
+    
+            
+
+}
+#endif
+
+void chat_init(void)
+{
+    /* signal(14,say); */
+
+    //初始化对话框显示
+    font *f = fontLoad("/usr/share/fonts/DroidSansFallback.ttf");
+    fontSetSize(f,32);
+
+    bitmap *bm = createBitmapWithInit(800,160,4,getColor(0,0,0,0));
+
+    //添加到点阵图
+    fontPrint(f,bm,0,0,"可以跟我聊天噢 ~( ゜- ゜)つロ!",getColor(0,0,255,0),0);
+    show_font_to_lcd(mmap_fd,0,320,bm);
+    fontUnload(f);
+    destroyBitmap(bm);
+
+
+
+}
+void *myfriend(void *arg)
+{
+    int flag = *((int *)arg);
+
+
+    switch (flag)
+    {
+        case 1:
+            while (1)
+            {
+                GIF_show2(); //正常显示2
+            }
+            break;
+        case 2:
+            while (1)
+            {
+                GIF_show1();//唱歌
+            } 
+        default:
+            break;
+    }
+    
     
 }
 
@@ -124,41 +136,70 @@ int main(int argc, char const *argv[])
     lcd_open();
 
     //显示机器人表情
+    int set = 1;
     pthread_t PID;
-    pthread_create(&PID,NULL,myfriend,NULL);
+    pthread_create(&PID,NULL,myfriend,&set);
     //设置离线模式
     pthread_detach(PID);
-    //初始化对话框显示
-    font *f = fontLoad("/usr/share/fonts/DroidSansFallback.ttf");
-    fontSetSize(f,32);
-
-    bitmap *bm = createBitmapWithInit(800,160,4,getColor(0,0,0,0));
-
-    //添加到点阵图
-    fontPrint(f,bm,0,0,"可以跟我聊天噢~( ゜- ゜)つロ!",getColor(0,0,255,0),0);
-    show_font_to_lcd(mmap_fd,0,320,bm);
-    fontUnload(f);
-    destroyBitmap(bm);
-
+    
+    chat_init();
     while (1)
     {
-        int tcp_socket1 =  socket_get("47.107.155.132");
-        if (tcp_socket1 == -1)
-        {
-            return -1;
-        }
+        int tcp_socket1 =  socket_get("api.qingyunke.com");
+                    if (tcp_socket1 == -1)
+                    {
+                        continue;
+                    }
         char cmd[1024] = {0};
         int  flag_re = 0;
         printf("请输入内容\n");
         scanf("%s",cmd);
+        while ('\n' != getchar());
 
+        if(strstr(cmd,"歌") || strstr(cmd,"网易云") || strstr(cmd,"音乐"))
+        {
+            pthread_cancel(PID);
+            set = 2;
+            pthread_create(&PID,NULL,myfriend,&set);
+            pthread_detach(PID);
+            struct mp3_inf * new_mp3 = NULL;
+            while (1)
+            {
+                new_mp3 = get_music();
+                    if(new_mp3 == NULL)
+                    {
+                        continue;
+                    }else
+                    {
+                        break;
+                    }
+            }
+            char play_music_cmd[200] ={0};
+            sprintf(play_music_cmd,"mplayer -slave  -quiet ./loadmusic/%s.mp3 &",new_mp3->name);
+            
+            system(play_music_cmd);
+            pthread_cancel(PID);
+            set = 1;
+            pthread_create(&PID,NULL,myfriend,&set);
+            pthread_detach(PID);
+                
+            continue;
+        }
+        
         if (strstr(cmd,"天气"))
         {
             pthread_cancel(PID);
-            int tcp_socket2 =  socket_get("1.81.5.176");
-            if (tcp_socket2 == -1)
+            int tcp_socket2;
+            while (1)
             {
-                return -1;
+                tcp_socket2 =  socket_get("t.weather.itboy.net");
+                    if (tcp_socket2 == -1)
+                    {
+                        continue;
+                    }else
+                    {
+                        break;//成功连接
+                    }    
             }
             cJSON * obj= txt_get(cmd,tcp_socket2);
             if (obj == NULL)
@@ -180,8 +221,9 @@ int main(int argc, char const *argv[])
                 {
                     show_error();//显示
                     close(tcp_socket2);
-                    pthread_create(&PID,NULL,myfriend,NULL);
+                    pthread_create(&PID,NULL,myfriend,&set);
                     pthread_detach(PID);
+                    chat_init();
                     continue;
                 }
             }else
@@ -189,15 +231,16 @@ int main(int argc, char const *argv[])
                 printf("获取信息成功\n");
             }
             //显示未来5天天气信息
-            show_futuer(obj);
+            show_futuerweather(obj);
             close(tcp_socket2);
             //开启线程
-            pthread_create(&PID,NULL,myfriend,NULL);
+            pthread_create(&PID,NULL,myfriend,&set);
             pthread_detach(PID);
+            chat_init();
             continue;
         }
 
-        if (strstr(cmd,"图片"))
+        if (strstr(cmd,"图片") || strstr(cmd,"二次元") || strstr(cmd,"周浩"))
         {
             pthread_cancel(PID);
             while (1)
@@ -207,13 +250,14 @@ int main(int argc, char const *argv[])
                     continue;
                 }else
                 {
-                    lcd_draw_jpg(0,0,"./1.jpeg",1);//显示抓取到的图片
+                    lcd_draw_jpg(0,0,"./inter_load.jpeg",1);//显示抓取到的图片
                     break;
                 }
             }
             sleep(10);
-            pthread_create(&PID,NULL,myfriend,NULL);
+            pthread_create(&PID,NULL,myfriend,&set);
             pthread_detach(PID);
+            chat_init();
             continue;
         }
         
@@ -226,6 +270,7 @@ int main(int argc, char const *argv[])
         }
         
         close(tcp_socket1);
+        
     }
 
     lcd_close();

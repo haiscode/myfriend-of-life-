@@ -1,5 +1,35 @@
 #include "get_txt.h"
 
+
+int socket_get(char * service_ip)
+{
+    struct hostent * addr = gethostbyname(service_ip);
+                        if (addr == NULL)
+                        {
+                            return -1;
+                        }
+    int tcp_socket = socket(AF_INET, SOCK_STREAM, 0);
+                if (tcp_socket == -1)
+                {
+                    perror("socket()");
+                    return -1;
+                }
+    struct sockaddr_in service_addr;
+    service_addr.sin_port = htons(80);
+    service_addr.sin_family = AF_INET;
+    service_addr.sin_addr.s_addr = inet_addr(inet_ntoa(*(struct in_addr *)addr->h_addr_list[0]));
+
+    if(connect(tcp_socket,(struct sockaddr *)&service_addr,sizeof(struct sockaddr)) == -1)
+    {
+        perror("connect()");
+        return -1;
+    }else
+    {
+        return tcp_socket;
+    }
+    
+} 
+
 bool find_city_id(char *cmd,city *c)//获取城市ID
 {
     //city.txt存放城市ID
@@ -35,14 +65,17 @@ bool find_city_id(char *cmd,city *c)//获取城市ID
 void show_error(void) //错误显示
 {
     
+    //初始化对话框显示
     font *f = fontLoad("/usr/share/fonts/DroidSansFallback.ttf");
-    bitmap *bm = createBitmapWithInit(800,480,4,getColor(0,0,128,255));
-    fontSetSize(f,72);
-    fontPrint(f,bm,200,200,"请重新输入",getColor(0,255,255,255),0);
-    show_font_to_lcd(mmap_fd,0,0,bm);
+    fontSetSize(f,32);
+
+    bitmap *bm = createBitmapWithInit(800,160,4,getColor(0,0,0,0));
+    //添加到点阵图
+    fontPrint(f,bm,0,0,"俺不懂你说啥  o(￣┰￣*)ゞ！！！",getColor(0,0,255,0),0);
+    show_font_to_lcd(mmap_fd,0,320,bm);
     fontUnload(f);
     destroyBitmap(bm);
-    sleep(2);
+    sleep(1);
 }
 
 cJSON * txt_get(char * cmd,int tcp_socket) //weather API文本获得
@@ -98,7 +131,9 @@ bool chat_get(char * cmd,int tcp_socket) //青云客文本获得
     write(tcp_socket,http_head,strlen(http_head));
 
     char head[1024] ={0};
+    
     read(tcp_socket,head,sizeof(head));
+    
 
     if (strlen(head) == 0)
     {
@@ -123,9 +158,11 @@ bool chat_get(char * cmd,int tcp_socket) //青云客文本获得
     int i =0;
     while (1)
     {
+        
         p2 = strtok(NULL,ch);
         if (p2 == NULL)
         {
+            
             show_font_to_lcd(mmap_fd,0,320,bm);
             fontUnload(f);
             destroyBitmap(bm);
@@ -146,27 +183,11 @@ bool chat_get(char * cmd,int tcp_socket) //青云客文本获得
 int get_jpg(void)
 {
 	//
-	int tcp_socket_random = socket(AF_INET, SOCK_STREAM, 0);
-		
-
-	//建立跳转网址地址结构体
-    struct sockaddr_in service_addr_random;
-    service_addr_random.sin_port = htons(80);
-    service_addr_random.sin_family = AF_INET;
-    service_addr_random.sin_addr.s_addr = inet_addr("185.194.236.124");
-
-	//与跳转网址建立连接
-    int ret = connect(tcp_socket_random, (struct sockaddr *)&service_addr_random,sizeof(service_addr_random));
-        if (ret == -1 )
-        {
-            printf("connect lost!!!\n");
-            return -1;
-        }else
-        {
-            printf("connect success!!!\n");
-        }
-
-        
+    int tcp_socket_random = socket_get("www.dmoe.cc");
+                if ( tcp_socket_random == -1)
+                {
+                    return -1;
+                }
 
         char *http_head_random = "GET /random.php HTTP/1.1\r\nHOST:www.dmoe.cc\r\n\r\n";
 
@@ -204,30 +225,13 @@ int get_jpg(void)
         sprintf(new_http_head,"GET %s HTTP/1.1\r\nHOST:%s\r\n\r\n",URL,yuming);
         close(tcp_socket_random);
 
+        //通过获得的JPEG域名获得IP  ----》随意选取备用IP地址
 
-
-   //1.创建TCP socket  
-       
-	int tcp_socket_jpg = socket(AF_INET, SOCK_STREAM, 0);
-
-  // 2.设置服务器的IP地址并链接    
-    struct sockaddr_in server_addr;
-    server_addr.sin_family = AF_INET;
-    server_addr.sin_port = htons(80); //HTTP 协议默认的端口就是 80 
-    server_addr.sin_addr.s_addr = inet_addr("183.60.138.230"); //服务器的IP地址
-											//图片的地址 
-
-  // 3.链接 
-  int ret1 = connect(tcp_socket_jpg,(struct sockaddr *)&server_addr,sizeof(server_addr));
-	  if(ret1 < 0)
-	  {
-		printf("链接失败\n");
-		return 0;
-	  }
-	  else
-	  {
-		  printf("链接成功\n");
-	  }
+        int tcp_socket_jpg = socket_get(yuming);
+                if ( tcp_socket_random == -1)
+                {
+                    return -1;
+                }
 														
 	//发HTTP 请求协议  
 	write(tcp_socket_jpg,new_http_head,strlen(new_http_head));
@@ -236,7 +240,7 @@ int get_jpg(void)
 	//新建一个文件  
 
 
-       int fd=open("1.jpeg",O_RDWR|O_CREAT|O_TRUNC,0777);
+       int fd=open("inter_load.jpeg",O_RDWR|O_CREAT|O_TRUNC,0777);
 			if(fd < 0)
 			{
 				perror("");
@@ -283,7 +287,7 @@ int get_jpg(void)
 			close(fd);
 			return 0;
 		}
-	     //把数据写入到本地文件中 
+	    //把数据写入到本地文件中 
 		write(fd,buf,size);
 		//printf("buf=%s\n",buf);
 	}
@@ -291,3 +295,263 @@ int get_jpg(void)
 }
 
 
+struct mp3_inf* get_music(void)
+{
+	
+    struct mp3_inf * music_inf = malloc(sizeof(struct mp3_inf));
+                if(music_inf == NULL)
+                {
+                    perror("malloc()");
+                    return NULL;
+                }
+    //第一次请求
+	struct hostent * random_addr = gethostbyname("api.uomg.com");
+                        if (random_addr == NULL)
+                        {
+                            return NULL;
+                        }
+    int tcp_socket_random = socket(AF_INET, SOCK_STREAM, 0);
+                if (tcp_socket_random == -1)
+                {
+                    perror("socket()");
+                    return NULL;
+                }
+    struct sockaddr_in service_addr;
+    service_addr.sin_port = htons(80);
+    service_addr.sin_family = AF_INET;
+    service_addr.sin_addr.s_addr = inet_addr(inet_ntoa(*(struct in_addr *)random_addr->h_addr_list[0]));
+
+    if(connect(tcp_socket_random,(struct sockaddr *)&service_addr,sizeof(struct sockaddr)) == -1)
+    {
+        perror("connect()");
+        return NULL;
+    }
+
+    char *http_head_random = "GET /api/rand.music?sort=热歌榜&format=json HTTP/1.1\r\nHOST:api.uomg.com\r\n\r\n";
+
+        write(tcp_socket_random,http_head_random,strlen(http_head_random));
+
+        char  head_random[2048*100] ={0};
+        read(tcp_socket_random,head_random,sizeof(head_random));
+					if(strlen(head_random) == 0)
+					{
+						return NULL;
+					}
+        
+		//读取歌曲信息
+		char *json_inf = strstr(head_random,"{\"code\"");
+
+
+		char *json_inf_tail = strstr(head_random,"}}");
+		json_inf_tail +=2;
+		int json_len = (int)(json_inf_tail-json_inf);
+
+		char json_txt[1024] ={0};
+		strncpy(json_txt,json_inf,json_len);
+		
+        //获取JSON数据
+		cJSON * obj =  cJSON_Parse(json_txt);
+			if(obj == NULL)
+			{
+				return NULL;
+			}
+        
+        
+        
+		cJSON * mp3_inf_data = cJSON_GetObjectItem(obj,"data");
+		cJSON * mp3_inf_name = cJSON_GetObjectItem(mp3_inf_data,"name");
+		cJSON * mp3_inf_artistsname = cJSON_GetObjectItem(mp3_inf_data,"artistsname");
+		cJSON * mp3_inf_id = cJSON_GetObjectItem(mp3_inf_data,"url");
+
+        strcpy(music_inf->name,mp3_inf_name->valuestring);
+        strcpy(music_inf->artistsname,mp3_inf_artistsname->valuestring);
+
+        char *ch ="/";
+        char *p3 = strtok(mp3_inf_id->valuestring,ch);
+        char new_http_head_163[1024] = {0};
+        char yuming[50] ={0};
+        char URL[100] ={0};
+		p3 = strtok(NULL,ch);
+		strcpy(yuming,p3);
+		/* printf("%s\n",yuming); */
+		while (1)
+		{
+			p3 = strtok(NULL,ch);
+				if(p3 ==NULL)
+				{
+					/* printf("%s\n",URL); */
+					break;
+				}
+			sprintf(URL,"%s/%s",URL,p3);
+		}
+
+       
+		//第二次请求
+        sprintf(new_http_head_163,"GET %s HTTP/1.1\r\nHOST:%s\r\n\r\n",URL,yuming);
+		/* printf("%s\n",new_http_head_163); */
+			
+        
+
+        struct hostent * random_163 = gethostbyname("music.163.com");
+                        if (random_163 == NULL)
+                        {
+                            return NULL;
+                        }
+    int tcp_socket_163 = socket(AF_INET, SOCK_STREAM, 0);
+                if (tcp_socket_163 == -1)
+                {
+                    perror("socket()");
+                    return NULL;
+                }
+    struct sockaddr_in service_addr_163;
+    service_addr_163.sin_port = htons(80);
+    service_addr_163.sin_family = AF_INET;
+    service_addr_163.sin_addr.s_addr = inet_addr(inet_ntoa(*(struct in_addr *)random_163->h_addr_list[0]));
+
+    if(connect(tcp_socket_163,(struct sockaddr *)&service_addr_163,sizeof(struct sockaddr)) == -1)
+    {
+        perror("connect()");
+        return NULL;
+    }
+        write(tcp_socket_163,new_http_head_163,strlen(new_http_head_163));
+
+        char  head_163[2048*100] ={0};
+        read(tcp_socket_163,head_163,sizeof(head_163));
+				if(strlen(head_163) == 0)
+					{
+						return NULL;
+					}
+		
+
+		char *p4 = strstr(head_163,"Location: ");
+		p4 += 10; 
+        char *p5 = strstr(head_163,".mp3");
+        int txt_len_1 = (int)(p5-p4);
+        char content_1[1024] = {0};
+        strncpy(content_1,p4,txt_len_1);
+		/* printf("%s\n",content_1); */
+
+
+		char *ch1 ="/";
+        char *p6 = strtok(content_1,ch1);
+        char new_http_head_final[1024] = {0};
+        char music_yuming[50] ={0};
+        char URL_1[200] ={0};
+		p6 = strtok(NULL,ch1);
+		strcpy(music_yuming,p6);
+		
+		while (1)
+		{
+			p6 = strtok(NULL,ch);
+				if(p6 ==NULL)
+				{
+					sprintf(URL_1,"%s.mp3",URL_1);
+					
+					break;
+				}
+			sprintf(URL_1,"%s/%s",URL_1,p6);
+		}
+
+		
+		//第三次请求
+        sprintf(new_http_head_final,"GET %s HTTP/1.1\r\nHOST:%s\r\n\r\n",URL_1,music_yuming);
+		
+
+		
+
+		struct hostent * random_mp3 = gethostbyname("m10.music.126.net");
+                        if (random_mp3 == NULL)
+                        {
+							perror("gethostbyname()");
+                            return NULL;
+                        }
+    int tcp_socket_mp3= socket(AF_INET, SOCK_STREAM, 0);
+                if (tcp_socket_mp3 == -1)
+                {
+                    perror("socket()");
+                    return NULL;
+                }
+    struct sockaddr_in service_addr_mp3;
+    service_addr_mp3.sin_port = htons(80);
+    service_addr_mp3.sin_family = AF_INET;
+    service_addr_mp3.sin_addr.s_addr = inet_addr(inet_ntoa(*(struct in_addr *)random_mp3->h_addr_list[0]));
+
+    if(connect(tcp_socket_mp3,(struct sockaddr *)&service_addr_mp3,sizeof(struct sockaddr)) == -1)
+    {
+        perror("connect()");
+        return NULL;
+    }
+
+    write(tcp_socket_mp3,new_http_head_final,strlen(new_http_head_final));
+
+    char  head_mp3[4096] ={0};
+    int size1 = read(tcp_socket_mp3,head_mp3,sizeof(head_mp3));
+                if(strlen(head_mp3) == 0)
+                {
+                    return NULL;
+                }
+    
+
+    char joint_name[50] ={0};
+
+    sprintf(joint_name,"./loadmusic/%s.mp3",music_inf->name);
+    
+
+    int fd=open(joint_name,O_RDWR|O_CREAT|O_TRUNC,0777);
+			if(fd < 0)
+			{
+				perror("open()");
+				return NULL;
+			}
+	
+	//读取头数据  
+	
+	
+	//取出文件的大小 
+	int mp3_size=0;
+	//下载的大小 
+	int load_size=0;
+	
+	char *p7 =  strstr(head_mp3,"Content-Length");  //查找关键字
+	
+	sscanf(p7,"Content-Length:%d\r\n",&mp3_size);
+	
+	
+
+	
+	//求出头数据的长度 
+	p7 = strstr(head_mp3,"\r\n\r\n");   //回文末尾  
+	p7 = p7+4; 
+	
+  int mp3head_len = (int)(p7 - head_mp3);
+      
+	
+	//写入去头的一次数据 
+	  int len  =size1-mp3head_len; 
+	  write(fd,p7,len);
+	  load_size =+ len;
+	
+	
+	while(1)
+	{
+	//回收HTTP 服务器的消息
+        char  mp3_buf[204800*10]={0};
+        int size = read(tcp_socket_mp3,mp3_buf,10240*10);
+        load_size += size;
+        
+        if(mp3_size == load_size)
+        {
+            
+            write(fd,mp3_buf,size);
+            close(tcp_socket_random);
+            close(tcp_socket_mp3);
+            close(tcp_socket_163);
+            close(fd);
+            return music_inf;
+        }
+        //把数据写入到本地文件中 
+        write(fd,mp3_buf,size);
+		//printf("buf=%s\n",buf);
+	}
+
+}

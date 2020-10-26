@@ -1,7 +1,7 @@
 #include "show_weather.h"
 
 
-struct ymds  *get_ym(char *ymd)
+struct ymds  *get_ym(char *ymd) //获得年月日
 {
     struct ymds *new = calloc(1,sizeof(struct ymds));
     char * ch ="-";
@@ -92,10 +92,10 @@ struct data_fun * weather_show(cJSON * obj,int n)
     //获取今天和未来4天的数据
     cJSON  * new_obj =  cJSON_GetArrayItem(forecast_arry,n);
             
-    char high[15] ={0};
-    char low[15] ={0};
-    char fx[15] ={0};
-    char fl[15] ={0};
+    char high[14] ={0};
+    char low[14] ={0};
+    char fx[9] ={0};
+    char fl[6] ={0};
     int aqi =0;
     //获得年月日
     ymds = *(get_ym(cJSON_GetObjectItem(new_obj,"ymd")->valuestring));
@@ -117,7 +117,6 @@ struct data_fun * weather_show(cJSON * obj,int n)
     
     aqi = cJSON_GetObjectItem(new_obj,"aqi")->valueint;
     //aqi空气质量指数 0-50 良好 51-100中等 101-150轻度污染 151-200中度污染 201-250重度污染 251-300严重污染
-    char inf_aqi[20];
     if (aqi>0 && aqi<=50)
     {
         strcpy(inf->aqi,"优");
@@ -157,7 +156,7 @@ struct data_fun * weather_show(cJSON * obj,int n)
     //低温~高温
     sprintf(inf->wendu,"%s~%s℃",low1,high1);
     //风向+风级
-    sprintf(inf->fxfl,"%s %s",fx,fl);
+    sprintf(inf->fxfl,"%s%s",fx,fl);
 
     
     return inf; 

@@ -19,14 +19,14 @@ struct ymds
 struct data_fun
 {
     char first[100];
-    char md[50];
-    char week[15];
-    char wendu[50];
-    char aqi[20];
+    char md[19];
+    char week[10];
+    char wendu[22];
+    char aqi[13];
     int aqilv;
-    char fxfl[50];
+    char fxfl[17];
   
-    char type[20];
+    char type[13];
     char notice[50];
 };
 

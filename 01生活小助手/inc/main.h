@@ -8,7 +8,7 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include "lcd.h"
-#include "show_txt.h"
+
 #include "cJSON.h"
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -20,7 +20,7 @@
 #include <sys/types.h>
        #include <signal.h>
        #include <sys/select.h>
-
+#include <unistd.h>
        /* According to earlier standards */
        #include <sys/time.h>
        #include <sys/types.h>

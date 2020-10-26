@@ -35,13 +35,13 @@ void waitinput_GIF_show(void) //等待输入
 	
 }
 
-void GIF_show1(void) //正常显示1
+void GIF_show1(void) //唱歌
 {
 
-    for (int i = 1; i < 11; i++)
+    for (int i = 1; i < 84; i++)
     {
         char pathename[100]={0};
-        sprintf(pathename,"./gif/show1/正常显示1-%d.jpeg",i);
+        sprintf(pathename,"./gif/唱歌-%d.jpeg",i);
         lcd_draw_jpg(0,0,pathename,0);
         usleep(50000);  
     }
